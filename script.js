@@ -669,6 +669,7 @@
   let ytPlayer = null;
   let bgmStarted = false;
   let bgmPending = false;
+  let bgmFadeTimer = null;
 
   function initMusic() {
     const wrap = $('#bgm');
@@ -716,6 +717,11 @@
             const playing = e.data === YT.PlayerState.PLAYING;
             toggle.classList.toggle('is-playing', playing);
             toggle.setAttribute('aria-pressed', playing ? 'true' : 'false');
+
+            // 유튜브가 재생 시작 시 볼륨을 되돌리는 경우가 있어 다시 적용
+            if (playing && !bgmFadeTimer) {
+              ytPlayer.setVolume(bgmTargetVolume());
+            }
           },
           onError: (e) => {
             // 1/5=영상ID 오류, 100=영상 없음/비공개, 101·150=임베드 차단
@@ -766,8 +772,12 @@
       return;
     }
     bgmStarted = true;
+
+    // 0에서 시작해 목표 볼륨까지 서서히 올림 (첫 소리가 크게 터지는 것 방지)
+    ytPlayer.setVolume(0);
     ytPlayer.unMute();
     ytPlayer.playVideo();
+    fadeInBgm();
 
     // 재생이 막힌 경우 1.2초 뒤 무음으로라도 시작 (버튼으로 소리를 켤 수 있게)
     setTimeout(() => {
@@ -777,6 +787,32 @@
         ytPlayer.playVideo();
       }
     }, 1200);
+  }
+
+  // 약 2초에 걸쳐 목표 볼륨까지 페이드인
+  function fadeInBgm() {
+    const target = bgmTargetVolume();
+    let v = 0;
+    clearInterval(bgmFadeTimer);
+    bgmFadeTimer = setInterval(() => {
+      if (!ytPlayer || typeof ytPlayer.setVolume !== 'function') {
+        clearInterval(bgmFadeTimer);
+        bgmFadeTimer = null;
+        return;
+      }
+      v += Math.max(1, Math.round(target / 20));
+      if (v >= target) {
+        v = target;
+        clearInterval(bgmFadeTimer);
+        bgmFadeTimer = null;
+      }
+      ytPlayer.setVolume(v);
+    }, 100);
+  }
+
+  function bgmTargetVolume() {
+    const v = CONFIG.music && CONFIG.music.volume;
+    return typeof v === 'number' ? Math.max(0, Math.min(100, v)) : 35;
   }
 
   /* ═══════════════════════════════════════════
