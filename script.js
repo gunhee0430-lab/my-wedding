@@ -112,6 +112,23 @@
     }
   }
 
+  /**
+   * config의 \n 위치 그대로 줄을 고정합니다.
+   * 각 줄은 절대 자동 줄바꿈되지 않고, 화면이 좁으면 글자 크기가 줄어듭니다.
+   */
+  function setFixedLines(el, text) {
+    if (!el) return;
+    el.classList.add('keep-lines');
+    el.innerHTML = '';
+    String(text || '').split('\n').forEach((line) => {
+      const span = document.createElement('span');
+      span.className = 'keep-lines__line';
+      span.textContent = line;
+      if (line.trim() === '') span.classList.add('is-blank');
+      el.appendChild(span);
+    });
+  }
+
   /* ═══════════════════════════════════════════
      OG Meta Tags
      ═══════════════════════════════════════════ */
@@ -217,7 +234,7 @@
 
   function initGreeting() {
     $('#greetingTitle').textContent = CONFIG.greeting.title;
-    $('#greetingContent').textContent = CONFIG.greeting.content;
+    setFixedLines($('#greetingContent'), CONFIG.greeting.content);
 
     const g = CONFIG.groom;
     const b = CONFIG.bride;
@@ -336,7 +353,7 @@
 
   function initStory(storyImages) {
     $('#storyTitle').textContent = CONFIG.story.title;
-    $('#storyContent').textContent = CONFIG.story.content;
+    setFixedLines($('#storyContent'), CONFIG.story.content);
 
     const container = $('#storyPhotos');
     const placeholder = container.querySelector('.loading-placeholder');
@@ -598,7 +615,7 @@
         </div>
         <div class="transport__body">
           <div class="transport__title">${item.title || ''}</div>
-          <div class="transport__desc">${item.desc || ''}</div>
+          <div class="transport__desc keep-lines">${(item.desc || '').split('\n').map(l => `<span class="keep-lines__line${l.trim() === '' ? ' is-blank' : ''}">${l}</span>`).join('')}</div>
         </div>
       `;
       container.appendChild(row);
@@ -834,8 +851,8 @@
 
     section.hidden = false;
     $('#photoShareTitle').textContent = cfg.title || '사진 보내주세요';
-    $('#photoShareDesc').textContent = cfg.desc || '';
-    $('#photoShareNote').textContent = cfg.note || '';
+    setFixedLines($('#photoShareDesc'), cfg.desc || '');
+    setFixedLines($('#photoShareNote'), cfg.note || '');
     $('#photoShareBtnText').textContent = cfg.buttonText || '사진 올리기';
     $('#photoShareBtn').href = url;
 
@@ -937,7 +954,7 @@
 
     // Set story text immediately (photos load async)
     $('#storyTitle').textContent = CONFIG.story.title;
-    $('#storyContent').textContent = CONFIG.story.content;
+    setFixedLines($('#storyContent'), CONFIG.story.content);
 
     // Auto-detect story and gallery images in parallel
     const [storyImages, galleryImages] = await Promise.all([
