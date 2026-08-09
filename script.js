@@ -358,10 +358,12 @@
      Gallery Section
      ═══════════════════════════════════════════ */
 
-  const GALLERY_GRID_COUNT = 9;  // 그리드에 노출할 장수 (나머지는 슬라이드)
+  const GALLERY_PAGE_SIZE = 9;  // 한 페이지에 보여줄 장수 (3×3)
 
   function initGallery(galleryImages) {
     const grid = $('#galleryGrid');
+    const dots = $('#galleryDots');
+    const hint = $('#galleryHint');
     const placeholder = grid.querySelector('.loading-placeholder');
     if (placeholder) placeholder.remove();
 
@@ -371,46 +373,44 @@
       return;
     }
 
-    // ── 앞 9장: 그리드 ──
-    galleryImages.slice(0, GALLERY_GRID_COUNT).forEach((src, i) => {
-      const div = document.createElement('div');
-      div.className = 'gallery__item animate-item';
-      div.setAttribute('data-animate', 'scale-in');
-      div.innerHTML = `<img src="${src}" alt="갤러리 사진 ${i + 1}" loading="lazy">`;
-      div.addEventListener('click', () => openPhotoModal(galleryImages, i));
-      grid.appendChild(div);
-    });
+    const pageCount = Math.ceil(galleryImages.length / GALLERY_PAGE_SIZE);
 
-    // ── 나머지: 가로 슬라이드 ──
-    const rest = galleryImages.slice(GALLERY_GRID_COUNT);
-    if (rest.length === 0) return;
+    for (let p = 0; p < pageCount; p++) {
+      const page = document.createElement('div');
+      page.className = 'gallery__page';
 
-    const slider = $('#gallerySlider');
-    const track = $('#galleryTrack');
-    const dots = $('#galleryDots');
-    slider.hidden = false;
+      galleryImages
+        .slice(p * GALLERY_PAGE_SIZE, (p + 1) * GALLERY_PAGE_SIZE)
+        .forEach((src, i) => {
+          const realIndex = p * GALLERY_PAGE_SIZE + i;
+          const div = document.createElement('div');
+          div.className = 'gallery__item animate-item';
+          div.setAttribute('data-animate', 'scale-in');
+          div.innerHTML = `<img src="${src}" alt="갤러리 사진 ${realIndex + 1}" loading="lazy">`;
+          div.addEventListener('click', () => openPhotoModal(galleryImages, realIndex));
+          page.appendChild(div);
+        });
 
-    rest.forEach((src, i) => {
-      const realIndex = GALLERY_GRID_COUNT + i;
+      grid.appendChild(page);
+    }
 
-      const slide = document.createElement('div');
-      slide.className = 'gallery__slide';
-      slide.innerHTML = `<img src="${src}" alt="갤러리 사진 ${realIndex + 1}" loading="lazy">`;
-      slide.addEventListener('click', () => openPhotoModal(galleryImages, realIndex));
-      track.appendChild(slide);
+    // 9장 이하면 넘길 페이지가 없으므로 점·안내문 숨김
+    if (pageCount < 2) return;
 
+    dots.hidden = false;
+    hint.hidden = false;
+
+    for (let p = 0; p < pageCount; p++) {
       const dot = document.createElement('span');
-      dot.className = 'gallery__dot' + (i === 0 ? ' is-active' : '');
+      dot.className = 'gallery__dot' + (p === 0 ? ' is-active' : '');
       dots.appendChild(dot);
-    });
+    }
 
-    // 스크롤 위치에 따라 점 표시 갱신
     let dotTimer = null;
-    track.addEventListener('scroll', () => {
+    grid.addEventListener('scroll', () => {
       clearTimeout(dotTimer);
       dotTimer = setTimeout(() => {
-        const slideW = track.scrollWidth / rest.length;
-        const active = Math.round(track.scrollLeft / slideW);
+        const active = Math.round(grid.scrollLeft / grid.clientWidth);
         [...dots.children].forEach((d, i) => {
           d.classList.toggle('is-active', i === active);
         });
@@ -550,13 +550,58 @@
     $('#locationVenue').textContent = w.venue;
     $('#locationHall').textContent = w.hall;
     $('#locationAddress').textContent = w.address;
-    $('#locationTel').textContent = w.tel ? `Tel. ${w.tel}` : '';
+    if (w.tel) {
+      $('#locationTel').innerHTML = `<a href="tel:${w.tel.replace(/[^0-9+]/g, '')}" class="location__tel-link">Tel. ${w.tel}</a>`;
+    } else {
+      $('#locationTel').textContent = '';
+    }
     $('#locationMapImg').src = 'images/location/1.jpg';
     $('#kakaoMapBtn').href = w.mapLinks.kakao || '#';
     $('#naverMapBtn').href = w.mapLinks.naver || '#';
 
     $('#copyAddressBtn').addEventListener('click', () => {
       copyToClipboard(w.address, '주소가 복사되었습니다');
+    });
+
+    renderTransport();
+  }
+
+  /* ─── 교통 안내 ─── */
+
+  const TRANSPORT_ICONS = {
+    subway: '<circle cx="12" cy="12" r="9"/><path d="M8 10h8M8 14h8"/>',
+    bus: '<rect x="4" y="4" width="16" height="13" rx="2"/><path d="M4 11h16M7 21v-2M17 21v-2"/><circle cx="8" cy="14.5" r="0.6" fill="currentColor"/><circle cx="16" cy="14.5" r="0.6" fill="currentColor"/>',
+    car: '<path d="M5 13l1.5-4.5A2 2 0 018.4 7h7.2a2 2 0 011.9 1.5L19 13"/><path d="M4 13h16v4H4z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>',
+    parking: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 16V9h2.5a2.5 2.5 0 010 5H10"/>',
+    shuttle: '<rect x="3" y="6" width="18" height="10" rx="2"/><path d="M3 11h18M7 20v-2M17 20v-2"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'
+  };
+
+  function renderTransport() {
+    const container = $('#transportList');
+    if (!container) return;
+
+    const list = Array.isArray(CONFIG.transport) ? CONFIG.transport : [];
+    if (list.length === 0) {
+      container.remove();
+      return;
+    }
+
+    list.forEach((item) => {
+      const icon = TRANSPORT_ICONS[item.icon] || TRANSPORT_ICONS.info;
+      const row = document.createElement('div');
+      row.className = 'transport__item animate-item';
+      row.setAttribute('data-animate', 'fade-up');
+      row.innerHTML = `
+        <div class="transport__icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
+        </div>
+        <div class="transport__body">
+          <div class="transport__title">${item.title || ''}</div>
+          <div class="transport__desc">${item.desc || ''}</div>
+        </div>
+      `;
+      container.appendChild(row);
     });
   }
 

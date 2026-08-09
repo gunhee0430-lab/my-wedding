@@ -63,6 +63,41 @@ const CONFIG = {
 
   // ── 오시는 길 ──
   // (mapLinks는 wedding 객체 내에 포함)
+ 
+  // ── 교통 안내 (오시는 길 하단) ──
+  // 필요 없는 항목은 통째로 지우면 됩니다. 배열 전체를 비우면 영역이 사라집니다.
+  // icon 종류: "subway" | "bus" | "car" | "parking" | "shuttle" | "info"
+  transport: [
+    {
+      icon: "subway",
+      title: "지하철",
+      desc: "인천지하철 작전역 4번 출구\n도보 약 5분"
+    },
+    {
+      icon: "bus",
+      title: "버스",
+      desc: "김포 81번, 영등포 88번, 강화90번 "
+    },
+    {
+  icon: "car",
+  title: "자가용 · 주차",
+  desc: "내비게이션에 '카리스호텔' 또는\n'인천 계양구 계양대로 28' 검색\n\n호텔 주차장 무료 이용"
+}
+  ],
+ 
+  // ── 마음 전하실 곳 ──
+  accounts: {
+    groom: [
+      { role: "신랑", name: "조건희", bank: "신한은행", number: "110-279-165126" },
+      { role: "아버지", name: "조성철", bank: "카카오뱅크", number: "3333-0202-92316" },
+    ],
+    bride: [
+      { role: "신부", name: "박수지", bank: "국민은행", number: "457002-01-330579" },
+      { role: "아버지", name: "박시현", bank: "기업은행", number: "000-000-000000" },
+      { role: "어머니", name: "조영순", bank: "농협은행", number: "000-000-000000" }
+    ]
+  },
+ 
 
   // ── 마음 전하실 곳 ──
   accounts: {
