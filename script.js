@@ -267,6 +267,19 @@
 
   function initCalendar() {
     const dt = getWeddingDateTime();
+
+    // ── 달력 위 일시 텍스트 ──
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    const hh = dt.getHours();
+    const mm = dt.getMinutes();
+    const period = hh < 12 ? '오전' : '오후';
+    const h12 = hh % 12 || 12;
+    const minuteStr = mm > 0 ? ` ${mm}분` : '';
+
+    const dEl = $('#calDateText');
+    const tEl = $('#calTimeText');
+    if (dEl) dEl.textContent = `${dt.getFullYear()}년 ${dt.getMonth() + 1}월 ${dt.getDate()}일 ${dayNames[dt.getDay()]}요일`;
+    if (tEl) tEl.textContent = `${period} ${h12}시${minuteStr}`;
     const year = dt.getFullYear();
     const month = dt.getMonth();
     const weddingDay = dt.getDate();
@@ -361,7 +374,8 @@
 
     if (storyImages.length === 0) return;
 
-    storyImages.forEach((src, i) => {
+    // 스토리 사진은 1장만 사용
+    storyImages.slice(0, 1).forEach((src, i) => {
       const div = document.createElement('div');
       div.className = 'story__photo-item animate-item';
       div.setAttribute('data-animate', 'fade-up');

@@ -17,7 +17,9 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+KR:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+  <!-- KoPub돋움 (300 light / 400 medium / 700 bold) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-kopub@1.0/kopubdotum.min.css">
 
   <link rel="stylesheet" href="styles.css">
   <script src="config.js"></script>
@@ -67,42 +69,46 @@
 
     <!-- ─── Hero Section ─── -->
     <section class="section hero" id="hero">
-      <div class="hero__overlay"></div>
-      <img class="hero__photo" id="heroPhoto" src="" alt="웨딩 사진" loading="eager">
-      <div class="hero__content">
+      <div class="hero__image-wrap">
+        <img class="hero__photo" id="heroPhoto" src="" alt="웨딩 사진" loading="eager">
+      </div>
+
+      <div class="hero__text">
         <p class="hero__label animate-item" data-animate="fade-down">Wedding Invitation</p>
         <div class="hero__gold-divider animate-item" data-animate="fade-in"></div>
         <h1 class="hero__names animate-item" data-animate="fade-up" id="heroNames"></h1>
         <div class="hero__gold-divider animate-item" data-animate="fade-in"></div>
         <p class="hero__date animate-item" data-animate="fade-up" id="heroDate"></p>
         <p class="hero__venue animate-item" data-animate="fade-up" id="heroVenue"></p>
-      </div>
 
-      <!-- Countdown -->
-      <div class="countdown animate-item" data-animate="fade-up" id="countdown">
-        <p class="countdown__label" id="countdownLabel"></p>
-        <div class="countdown__timer">
-          <div class="countdown__item">
-            <span class="countdown__number" id="countDays">0</span>
-            <span class="countdown__unit">DAYS</span>
-          </div>
-          <div class="countdown__sep">:</div>
-          <div class="countdown__item">
-            <span class="countdown__number" id="countHours">0</span>
-            <span class="countdown__unit">HRS</span>
-          </div>
-          <div class="countdown__sep">:</div>
-          <div class="countdown__item">
-            <span class="countdown__number" id="countMinutes">0</span>
-            <span class="countdown__unit">MIN</span>
-          </div>
-          <div class="countdown__sep">:</div>
-          <div class="countdown__item">
-            <span class="countdown__number" id="countSeconds">0</span>
-            <span class="countdown__unit">SEC</span>
+        <!-- Countdown -->
+        <div class="countdown animate-item" data-animate="fade-up" id="countdown">
+          <p class="countdown__label" id="countdownLabel"></p>
+          <div class="countdown__timer">
+            <div class="countdown__item">
+              <span class="countdown__number" id="countDays">0</span>
+              <span class="countdown__unit">일</span>
+            </div>
+            <div class="countdown__sep">:</div>
+            <div class="countdown__item">
+              <span class="countdown__number" id="countHours">0</span>
+              <span class="countdown__unit">시간</span>
+            </div>
+            <div class="countdown__sep">:</div>
+            <div class="countdown__item">
+              <span class="countdown__number" id="countMinutes">0</span>
+              <span class="countdown__unit">분</span>
+            </div>
+            <div class="countdown__sep">:</div>
+            <div class="countdown__item">
+              <span class="countdown__number" id="countSeconds">0</span>
+              <span class="countdown__unit">초</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <div class="scroll-indicator"><span></span></div>
     </section>
 
     <!-- ─── Greeting Section ─── -->
@@ -122,8 +128,8 @@
         <div class="gold-ornament animate-item" data-animate="fade-in"></div>
         <h2 class="section__title animate-item" data-animate="fade-up" id="storyTitle"></h2>
         <div class="section__gold-line animate-item" data-animate="fade-in"></div>
-        <p class="story__text animate-item" data-animate="fade-up" id="storyContent"></p>
         <div class="story__photos" id="storyPhotos"></div>
+        <p class="story__text animate-item" data-animate="fade-up" id="storyContent"></p>
       </div>
     </section>
 
@@ -133,6 +139,10 @@
         <div class="gold-ornament animate-item" data-animate="fade-in"></div>
         <h2 class="section__title animate-item" data-animate="fade-up">예식 일시</h2>
         <div class="section__gold-line animate-item" data-animate="fade-in"></div>
+        <div class="calendar-datetime animate-item" data-animate="fade-up">
+          <p class="calendar-datetime__date" id="calDateText"></p>
+          <p class="calendar-datetime__time" id="calTimeText"></p>
+        </div>
         <div class="calendar animate-item" data-animate="scale-in" id="calendarGrid"></div>
         <div class="calendar-actions animate-item" data-animate="fade-up">
           <a class="btn btn--gold-outline" id="googleCalBtn" href="#" target="_blank" rel="noopener">

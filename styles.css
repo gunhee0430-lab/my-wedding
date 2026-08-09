@@ -28,8 +28,8 @@
   --gradient-gold: linear-gradient(135deg, #1a2740 0%, #2b3d63 30%, #4d6a9c 50%, #2b3d63 70%, #1a2740 100%);
   --gradient-gold-subtle: linear-gradient(90deg, transparent, var(--color-gold-muted), transparent);
 
-  --font-serif: 'Noto Serif KR', 'Georgia', serif;
-  --font-display: 'Cormorant Garamond', 'Noto Serif KR', serif;
+  --font-serif: 'KoPub Dotum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --font-display: 'Cormorant Garamond', 'KoPub Dotum', sans-serif;
 
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
@@ -442,73 +442,61 @@ a {
 }
 
 /* ═══════════════════════════════════════════
-   Hero Section
+   Hero Section — 사진(위) / 내용(아래)
    ═══════════════════════════════════════════ */
 .hero {
   position: relative;
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
   padding: 0;
-  overflow: hidden;
-  background-color: #f4f6fa;
+  background-color: var(--color-bg);
+  display: block;
+  min-height: 0;
+  overflow: visible;
 }
 
-.hero__overlay {
+.hero__image-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;   /* 이미지 아래 여백 제거 */
+}
+
+/* 사진 하단이 흰 배경으로 스며들도록 */
+.hero__image-wrap::after {
+  content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.1) 0%,
-    transparent 18%,
-    transparent 38%,
-    rgba(255, 255, 255, 0.45) 58%,
-    rgba(255, 255, 255, 0.92) 80%,
-    #ffffff 100%
-  );
-  z-index: 1;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22%;
+  background: linear-gradient(to bottom, transparent, #ffffff);
+  pointer-events: none;
 }
 
 .hero__photo {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
+  height: auto;       /* 원본 비율 유지 — 잘리지 않음 */
+  animation: heroZoomIn 2s ease-out forwards;
 }
 
-.hero__content {
-  position: relative;
-  z-index: 2;
+@keyframes heroZoomIn {
+  0%   { opacity: 0; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.hero__text {
+  padding: var(--spacing-lg) var(--spacing-md) var(--spacing-2xl);
   text-align: center;
-  color: var(--color-text);
-  padding: 0 var(--spacing-md) var(--spacing-lg);
-  width: 100%;
 }
 
 .hero__label {
   font-family: var(--font-display);
   font-size: 0.8125rem;
-  font-weight: 300;
-  letter-spacing: 6px;
+  font-weight: 400;
+  letter-spacing: min(6px, 1.4vw);
   text-transform: uppercase;
   margin-bottom: var(--spacing-sm);
   color: var(--color-gold);
-  opacity: 0.85;
-}
-
-.hero__names {
-  font-family: var(--font-serif);
-  font-size: min(2rem, 8.5vw);
-  font-weight: 200;
-  letter-spacing: 8px;
-  margin-bottom: var(--spacing-sm);
-  line-height: 1.4;
-  color: var(--color-text);
 }
 
 .hero__gold-divider {
@@ -516,28 +504,61 @@ a {
   height: 1px;
   margin: 0 auto var(--spacing-md);
   background: var(--gradient-gold);
-  opacity: 0.6;
+  opacity: 0.8;
+}
+
+.hero__names {
+  font-family: var(--font-serif);
+  font-size: min(2rem, 6.6vw);
+  font-weight: 400;
+  letter-spacing: min(6px, 1.4vw);
+  margin-bottom: var(--spacing-md);
+  line-height: 1.4;
+  color: var(--color-text);
+  white-space: nowrap;
+  word-break: keep-all;
 }
 
 .hero__date,
 .hero__venue {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 300;
   letter-spacing: 2px;
-  color: var(--color-gold-dark);
-  opacity: 1;
-  line-height: 1.6;
+  color: var(--color-text-light);
+  line-height: 1.7;
 }
 
 .hero__venue {
   margin-top: 0.25rem;
 }
 
+/* ─── 스크롤 안내 화살표 ─── */
+.scroll-indicator {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.scroll-indicator span {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-right: 1px solid var(--color-gold-muted);
+  border-bottom: 1px solid var(--color-gold-muted);
+  transform: rotate(45deg);
+  animation: scrollDown 1.6s infinite;
+}
+
+@keyframes scrollDown {
+  0%   { opacity: 0; transform: rotate(45deg) translate(-4px, -4px); }
+  50%  { opacity: 1; }
+  100% { opacity: 0; transform: rotate(45deg) translate(4px, 4px); }
+}
+
 /* ─── Countdown ─── */
 .countdown {
-  position: relative;
-  z-index: 2;
-  padding: var(--spacing-lg) var(--spacing-md) calc(var(--spacing-lg) + var(--safe-bottom));
+  padding: var(--spacing-lg) 0 0;
   text-align: center;
   color: var(--color-text);
 }
@@ -547,7 +568,7 @@ a {
   font-weight: 300;
   letter-spacing: 3px;
   color: var(--color-gold-dark);
-  opacity: 0.7;
+  opacity: 0.8;
   margin-bottom: var(--spacing-sm);
 }
 
@@ -562,42 +583,39 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 3.5rem;
+  min-width: 3.25rem;
 }
 
 .countdown__number {
   font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 300;
-  line-height: 1;
-  letter-spacing: 2px;
-  color: var(--color-gold-light);
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 1px;
+  color: var(--color-text);
 }
 
 .countdown__unit {
-  font-family: var(--font-display);
-  font-size: 0.5625rem;
-  font-weight: 400;
-  letter-spacing: 3px;
-  color: var(--color-gold-dark);
-  opacity: 0.5;
-  margin-top: 0.375rem;
-  text-transform: uppercase;
+  font-size: 0.6875rem;
+  font-weight: 300;
+  letter-spacing: 1px;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
 }
 
 .countdown__sep {
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   font-weight: 300;
   color: var(--color-gold-muted);
-  margin-top: -1rem;
+  margin-bottom: 1.1rem;
 }
 
 /* ═══════════════════════════════════════════
    Greeting Section
    ═══════════════════════════════════════════ */
 .greeting {
-  background-color: var(--color-bg);
+  background: transparent;
 }
 
 .greeting__text {
@@ -646,7 +664,7 @@ a {
    Calendar Section
    ═══════════════════════════════════════════ */
 .calendar-section {
-  background-color: var(--color-bg-alt);
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5fb 22%, #f1f5fb 78%, #ffffff 100%);
 }
 
 .calendar {
@@ -735,7 +753,7 @@ a {
    Story Section
    ═══════════════════════════════════════════ */
 .story {
-  background-color: var(--color-bg);
+  background: transparent;
 }
 
 .story__text {
@@ -751,9 +769,12 @@ a {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
 }
 
 .story__photo-item {
+  max-width: 50%;
+  margin: 0 auto;
   border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
@@ -771,11 +792,35 @@ a {
   transform: scale(1.03);
 }
 
+.calendar-datetime {
+  margin-bottom: var(--spacing-lg);
+}
+
+.calendar-datetime__date {
+  font-family: var(--font-serif);
+  font-size: min(1.0625rem, 4.6vw);
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: var(--color-text);
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+.calendar-datetime__time {
+  margin-top: 0.375rem;
+  font-family: var(--font-serif);
+  font-size: min(1.5rem, 6.6vw);
+  font-weight: 500;
+  letter-spacing: 2px;
+  color: var(--color-gold-dark);
+  white-space: nowrap;
+}
+
 /* ═══════════════════════════════════════════
    Gallery Section
    ═══════════════════════════════════════════ */
 .gallery {
-  background-color: var(--color-bg-alt);
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5fb 22%, #f1f5fb 78%, #ffffff 100%);
 }
 
 .gallery__grid {
@@ -815,7 +860,11 @@ a {
 }
 
 .gallery__item:hover img {
-  transform: scale(1.08);
+  transform: scale(1.06);
+}
+
+.gallery__item:active img {
+  transform: scale(0.98);
 }
 
 /* Gold overlay on gallery hover */
@@ -872,7 +921,7 @@ a {
    Location Section
    ═══════════════════════════════════════════ */
 .location {
-  background-color: var(--color-bg);
+  background: transparent;
 }
 
 .location__info {
@@ -999,7 +1048,7 @@ a {
    Account Section (축의금)
    ═══════════════════════════════════════════ */
 .account {
-  background-color: var(--color-bg-alt);
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5fb 22%, #f1f5fb 78%, #ffffff 100%);
 }
 
 .account__desc {
@@ -1211,7 +1260,7 @@ a {
    Photo Share Section (하객 사진 업로드)
    ═══════════════════════════════════════════ */
 .photo-share {
-  background-color: var(--color-bg);
+  background: transparent;
 }
 
 .photo-share[hidden] {
@@ -1390,12 +1439,21 @@ a {
    ═══════════════════════════════════════════ */
 .animate-item {
   opacity: 0;
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition: opacity 1s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 1s cubic-bezier(0.22, 0.61, 0.36, 1);
   will-change: opacity, transform;
 }
 
+/* 같은 섹션 안에서 살짝씩 시차를 두고 등장 */
+.section__inner > .animate-item:nth-child(1) { transition-delay: 0s; }
+.section__inner > .animate-item:nth-child(2) { transition-delay: 0.09s; }
+.section__inner > .animate-item:nth-child(3) { transition-delay: 0.18s; }
+.section__inner > .animate-item:nth-child(4) { transition-delay: 0.27s; }
+.section__inner > .animate-item:nth-child(5) { transition-delay: 0.36s; }
+.section__inner > .animate-item:nth-child(6) { transition-delay: 0.45s; }
+
 .animate-item[data-animate="fade-up"] {
-  transform: translateY(30px);
+  transform: translateY(24px);
 }
 
 .animate-item[data-animate="fade-down"] {
@@ -1418,19 +1476,6 @@ a {
 /* ═══════════════════════════════════════════
    Gold Sparkle/Shimmer on Section Borders
    ═══════════════════════════════════════════ */
-.section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: var(--gradient-gold-subtle);
-}
-
-.section:first-child::before {
-  display: none;
-}
 
 /* Shimmer accent on gold ornaments */
 .gold-ornament {
@@ -1469,9 +1514,12 @@ a {
   }
 
   .story__photos {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
+    display: flex;
+    justify-content: center;
+  }
+
+  .story__photo-item {
+    max-width: 45%;
   }
 
   .story__photo-item img {
@@ -1488,18 +1536,62 @@ a {
    ═══════════════════════════════════════════ */
 @media (min-width: 1024px) {
   .main-content {
-    max-width: 480px;
-    margin: 0 auto;
-    box-shadow: 0 0 60px rgba(45, 55, 72, 0.08);
+    max-width: none;
+    margin: 0;
+    box-shadow: none;
+  }
+
+  /* 메인: 사진(왼쪽 60%) + 내용(오른쪽 40%) */
+  .hero {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
     min-height: 100vh;
   }
 
-  .hero {
-    min-height: 100vh;
+  .hero__image-wrap {
+    width: 60%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* PC에서도 사진 전체가 보이도록 (잘라내지 않음) */
+  .hero__photo {
+    width: auto;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    object-fit: contain;
+  }
+
+  .hero__text {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3.75rem;
+  }
+
+  .hero__names {
+    font-size: 2.25rem;
+  }
+
+  .countdown__number {
+    font-size: 2.25rem;
+  }
+
+  .countdown__item {
+    min-width: 4rem;
+  }
+
+  .scroll-indicator {
+    display: none;
   }
 
   .section__inner {
-    max-width: 440px;
+    max-width: 640px;
   }
 
   .photo-modal__container {
