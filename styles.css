@@ -773,7 +773,7 @@ a {
 }
 
 .story__photo-item {
-  max-width: 50%;
+  max-width: 100%;
   margin: 0 auto;
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -1519,7 +1519,7 @@ a {
   }
 
   .story__photo-item {
-    max-width: 45%;
+    max-width: 90%;
   }
 
   .story__photo-item img {
