@@ -40,7 +40,7 @@ const CONFIG = {
     date: "2026-12-13",
     time: "13:30",
     venue: "카리스호텔",
-    hall: "오스카홀 13층",
+    hall: "13층 오스카홀",
     address: "인천 계양구 계양대로 28",
     tel: "032-556-0880",
     mapLinks: {
