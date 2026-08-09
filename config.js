@@ -89,6 +89,20 @@ const CONFIG = {
     note: "링크를 열고 사진을 선택하면 바로 업로드됩니다."
   },
 
+  
+  // ── 배경음악 (유튜브) ──
+  // youtubeId 는 URL 전체가 아니라 영상 ID만 넣습니다.
+  //   https://www.youtube.com/watch?v=AbCdEfGh123  →  "AbCdEfGh123"
+  //   https://youtu.be/AbCdEfGh123                 →  "AbCdEfGh123"
+  music: {
+    enabled: true,
+    youtubeId: "BMA5fYUfXq0?si=3AVc-kwAyxM9G0mn",     // 비워두면 음악 기능이 아예 표시되지 않음
+    startAt: 30,        // 시작 지점(초). 전주가 길면 30 같은 값으로
+    volume: 30,        // 0~100
+    loop: true
+  },
+
+
   // ── 링크 공유 시 나타나는 문구 ──
   meta: {
     title: "조건희 ♥ 박수지 결혼합니다",
