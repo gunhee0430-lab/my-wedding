@@ -623,6 +623,7 @@
 
   let ytPlayer = null;
   let bgmStarted = false;
+  let bgmPending = false;
 
   function initMusic() {
     const wrap = $('#bgm');
@@ -661,15 +662,23 @@
           onReady: () => {
             ytPlayer.setVolume(typeof cfg.volume === 'number' ? cfg.volume : 35);
             toggle.classList.add('is-visible');
+            if (bgmPending) {
+              bgmPending = false;
+              startBgm();
+            }
           },
           onStateChange: (e) => {
             const playing = e.data === YT.PlayerState.PLAYING;
             toggle.classList.toggle('is-playing', playing);
             toggle.setAttribute('aria-pressed', playing ? 'true' : 'false');
           },
-          onError: () => {
-            // 임베드 불가 영상 등 → 버튼 숨김
-            wrap.remove();
+          onError: (e) => {
+            // 1/5=영상ID 오류, 100=영상 없음/비공개, 101·150=임베드 차단
+            console.warn('[BGM] YouTube 오류 코드:', e.data);
+            const msg = (e.data === 101 || e.data === 150)
+              ? '이 영상은 외부 재생이 차단되어 있습니다'
+              : '음악 영상을 불러오지 못했습니다 (코드 ' + e.data + ')';
+            showToast(msg);
           }
         }
       });
@@ -706,10 +715,23 @@
   // '초대장 열기' 클릭처럼 사용자 동작 직후에만 호출해야 소리가 납니다.
   function startBgm() {
     if (bgmStarted) return;
-    if (!ytPlayer || typeof ytPlayer.playVideo !== 'function') return;
+    if (!ytPlayer || typeof ytPlayer.playVideo !== 'function') {
+      // API 로딩이 늦은 경우: 준비되면 자동으로 재생 시도
+      bgmPending = true;
+      return;
+    }
+    bgmStarted = true;
     ytPlayer.unMute();
     ytPlayer.playVideo();
-    bgmStarted = true;
+
+    // 재생이 막힌 경우 1.2초 뒤 무음으로라도 시작 (버튼으로 소리를 켤 수 있게)
+    setTimeout(() => {
+      if (ytPlayer.getPlayerState && ytPlayer.getPlayerState() !== YT.PlayerState.PLAYING) {
+        console.warn('[BGM] 자동 재생이 차단되어 무음으로 시작합니다');
+        ytPlayer.mute();
+        ytPlayer.playVideo();
+      }
+    }, 1200);
   }
 
   /* ═══════════════════════════════════════════
