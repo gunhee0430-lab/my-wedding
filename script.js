@@ -149,6 +149,7 @@
     dateEl.textContent = formatDateShort(CONFIG.wedding.date);
 
     btn.addEventListener('click', () => {
+      startBgm();  // 사용자 클릭 직후 → 소리 있는 재생 허용
       curtain.classList.add('is-open');
       document.body.classList.remove('no-scroll');
       setTimeout(() => {
@@ -357,6 +358,8 @@
      Gallery Section
      ═══════════════════════════════════════════ */
 
+  const GALLERY_GRID_COUNT = 9;  // 그리드에 노출할 장수 (나머지는 슬라이드)
+
   function initGallery(galleryImages) {
     const grid = $('#galleryGrid');
     const placeholder = grid.querySelector('.loading-placeholder');
@@ -368,7 +371,8 @@
       return;
     }
 
-    galleryImages.forEach((src, i) => {
+    // ── 앞 9장: 그리드 ──
+    galleryImages.slice(0, GALLERY_GRID_COUNT).forEach((src, i) => {
       const div = document.createElement('div');
       div.className = 'gallery__item animate-item';
       div.setAttribute('data-animate', 'scale-in');
@@ -376,6 +380,42 @@
       div.addEventListener('click', () => openPhotoModal(galleryImages, i));
       grid.appendChild(div);
     });
+
+    // ── 나머지: 가로 슬라이드 ──
+    const rest = galleryImages.slice(GALLERY_GRID_COUNT);
+    if (rest.length === 0) return;
+
+    const slider = $('#gallerySlider');
+    const track = $('#galleryTrack');
+    const dots = $('#galleryDots');
+    slider.hidden = false;
+
+    rest.forEach((src, i) => {
+      const realIndex = GALLERY_GRID_COUNT + i;
+
+      const slide = document.createElement('div');
+      slide.className = 'gallery__slide';
+      slide.innerHTML = `<img src="${src}" alt="갤러리 사진 ${realIndex + 1}" loading="lazy">`;
+      slide.addEventListener('click', () => openPhotoModal(galleryImages, realIndex));
+      track.appendChild(slide);
+
+      const dot = document.createElement('span');
+      dot.className = 'gallery__dot' + (i === 0 ? ' is-active' : '');
+      dots.appendChild(dot);
+    });
+
+    // 스크롤 위치에 따라 점 표시 갱신
+    let dotTimer = null;
+    track.addEventListener('scroll', () => {
+      clearTimeout(dotTimer);
+      dotTimer = setTimeout(() => {
+        const slideW = track.scrollWidth / rest.length;
+        const active = Math.round(track.scrollLeft / slideW);
+        [...dots.children].forEach((d, i) => {
+          d.classList.toggle('is-active', i === active);
+        });
+      }, 80);
+    }, { passive: true });
   }
 
   /* ═══════════════════════════════════════════
@@ -389,17 +429,42 @@
   let touchStartY = 0;
   let touchEndY = 0;
 
+  let savedScrollY = 0;
+  let modalPushedState = false;
+
   function openPhotoModal(images, index) {
     modalImages = images;
     modalIndex = index;
     showModalImage();
+
+    // 현재 스크롤 위치 저장 (body가 position:fixed가 되며 위치를 잃기 때문)
+    savedScrollY = window.scrollY || window.pageYOffset || 0;
+
     $('#photoModal').classList.add('is-open');
+    document.body.style.top = `-${savedScrollY}px`;
     document.body.classList.add('no-scroll');
+
+    // 휴대폰 뒤로가기로 페이지를 벗어나지 않고 모달만 닫히도록
+    if (!modalPushedState) {
+      history.pushState({ photoModal: true }, '');
+      modalPushedState = true;
+    }
   }
 
-  function closePhotoModal() {
+  function closePhotoModal(fromPopstate) {
     $('#photoModal').classList.remove('is-open');
     document.body.classList.remove('no-scroll');
+    document.body.style.top = '';
+
+    // 저장해둔 위치로 복원 (맨 위로 튀는 현상 방지)
+    window.scrollTo(0, savedScrollY);
+
+    if (modalPushedState && !fromPopstate) {
+      modalPushedState = false;
+      history.back();
+    } else {
+      modalPushedState = false;
+    }
   }
 
   function showModalImage() {
@@ -420,11 +485,19 @@
   }
 
   function initPhotoModal() {
-    $('#modalClose').addEventListener('click', closePhotoModal);
+    $('#modalClose').addEventListener('click', () => closePhotoModal());
     $('#modalPrev').addEventListener('click', () => modalNavigate(-1));
     $('#modalNext').addEventListener('click', () => modalNavigate(1));
 
     const modal = $('#photoModal');
+
+    // 뒤로가기(브라우저/휴대폰) → 모달만 닫기
+    window.addEventListener('popstate', () => {
+      if (modal.classList.contains('is-open')) {
+        closePhotoModal(true);
+      }
+    });
+
     modal.addEventListener('click', (e) => {
       if (e.target === modal || e.target.id === 'modalContainer') {
         closePhotoModal();
@@ -545,6 +618,101 @@
   }
 
   /* ═══════════════════════════════════════════
+     Background Music (YouTube IFrame API)
+     ═══════════════════════════════════════════ */
+
+  let ytPlayer = null;
+  let bgmStarted = false;
+
+  function initMusic() {
+    const wrap = $('#bgm');
+    if (!wrap) return;
+
+    const cfg = CONFIG.music;
+    const id = cfg && typeof cfg.youtubeId === 'string' ? cfg.youtubeId.trim() : '';
+
+    if (!cfg || cfg.enabled === false || !id) {
+      wrap.remove();
+      return;
+    }
+
+    wrap.hidden = false;
+    const toggle = $('#bgmToggle');
+
+    // 유튜브 IFrame API 로드
+    window.onYouTubeIframeAPIReady = function () {
+      ytPlayer = new YT.Player('bgmFrame', {
+        height: '1',
+        width: '1',
+        videoId: id,
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          modestbranding: 1,
+          rel: 0,
+          playsinline: 1,
+          start: cfg.startAt || 0,
+          loop: cfg.loop === false ? 0 : 1,
+          playlist: cfg.loop === false ? undefined : id
+        },
+        events: {
+          onReady: () => {
+            ytPlayer.setVolume(typeof cfg.volume === 'number' ? cfg.volume : 35);
+            toggle.classList.add('is-visible');
+          },
+          onStateChange: (e) => {
+            const playing = e.data === YT.PlayerState.PLAYING;
+            toggle.classList.toggle('is-playing', playing);
+            toggle.setAttribute('aria-pressed', playing ? 'true' : 'false');
+          },
+          onError: () => {
+            // 임베드 불가 영상 등 → 버튼 숨김
+            wrap.remove();
+          }
+        }
+      });
+    };
+
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+
+    // 토글 버튼
+    toggle.addEventListener('click', () => {
+      if (!ytPlayer || typeof ytPlayer.getPlayerState !== 'function') return;
+      if (ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+        ytPlayer.pauseVideo();
+      } else {
+        ytPlayer.unMute();
+        ytPlayer.playVideo();
+        bgmStarted = true;
+      }
+    });
+
+    // 커튼을 안 쓰는 경우: 화면 첫 터치/클릭 시 재생
+    if (CONFIG.useCurtain === false) {
+      const startOnce = () => {
+        startBgm();
+        document.removeEventListener('click', startOnce);
+        document.removeEventListener('touchstart', startOnce);
+      };
+      document.addEventListener('click', startOnce, { once: true });
+      document.addEventListener('touchstart', startOnce, { once: true });
+    }
+  }
+
+  // '초대장 열기' 클릭처럼 사용자 동작 직후에만 호출해야 소리가 납니다.
+  function startBgm() {
+    if (bgmStarted) return;
+    if (!ytPlayer || typeof ytPlayer.playVideo !== 'function') return;
+    ytPlayer.unMute();
+    ytPlayer.playVideo();
+    bgmStarted = true;
+  }
+
+  /* ═══════════════════════════════════════════
      Photo Share Section (하객 사진 업로드)
      ═══════════════════════════════════════════ */
 
@@ -646,6 +814,7 @@
 
   async function init() {
     setMetaTags();
+    initMusic();
     initCurtain();
     initHero();
     initCountdown();
