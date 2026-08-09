@@ -133,7 +133,7 @@ const CONFIG = {
     enabled: true,
     youtubeId: "BMA5fYUfXq0",     // 비워두면 음악 기능이 아예 표시되지 않음
     startAt: 1,        // 시작 지점(초). 전주가 길면 30 같은 값으로
-    volume: 20,        // 0~100
+    volume: 5,        // 0~100
     loop: true
   },
 
